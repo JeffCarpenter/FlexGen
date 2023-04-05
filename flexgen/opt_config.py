@@ -84,10 +84,22 @@ def get_opt_config(name, **kwargs):
             max_seq_len=2048, num_hidden_layers=32, n_head=32,
             hidden_size=2560, input_dim=2560, ffn_embed_dim=2560 * 4,
         )
+    elif arch_name == "opt-2.7b-erebus":
+        config = OptConfig(name=name,
+            max_seq_len=2048, num_hidden_layers=32, n_head=32,
+            hidden_size=2560, input_dim=2560, ffn_embed_dim=2560 * 4,
+            vocab_size=50265
+        )
     elif arch_name == "opt-6.7b":
         config = OptConfig(name=name,
             max_seq_len=2048, num_hidden_layers=32, n_head=32,
             hidden_size=4096, input_dim=4096, ffn_embed_dim=4096 * 4,
+        )
+    elif arch_name == "opt-6.7b-erebus":
+        config = OptConfig(name=name,
+            max_seq_len=2048, num_hidden_layers=32, n_head=32,
+            hidden_size=4096, input_dim=4096, ffn_embed_dim=4096 * 4,
+            vocab_size=50265
         )
     elif arch_name == "opt-13b":
         config = OptConfig(name=name,
@@ -135,7 +147,13 @@ def download_opt_weights_old(model_name, path):
     path = os.path.join(path, f"{model_name}-np")
     path = os.path.abspath(os.path.expanduser(path))
 
-    if "opt" in model_name:
+    if "erebus" in model_name:
+        hf_model_name = "KoboldAI/" + model_name
+        model_class = OPTForCausalLM
+    elif "opt" in model_name:
+        hf_model_name = "facebook/" + model_name
+        model_class = OPTForCausalLM
+    elif "galactica" in model_name:
         hf_model_name = "facebook/" + model_name
         model_class = OPTForCausalLM
     elif "bloom" in model_name:
@@ -159,7 +177,7 @@ def download_opt_weights_old(model_name, path):
     os.makedirs(path, exist_ok=True)
 
     print(f"Convert the weights to numpy format under {path} ...")
-    if "opt" in model_name:
+    if "opt" in model_name or "galactica" in model_name:
         for name, param in tqdm(list(model.model.named_parameters())):
             name = name.replace("decoder.final_layer_norm", "decoder.layer_norm")
             param_path = os.path.join(path, name)
